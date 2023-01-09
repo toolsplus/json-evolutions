@@ -25,6 +25,12 @@ Next, install the JavaScript modules needed to build and test:
 npm install
 ```
 
+## Install the Husky commit hook
+
+```shell
+npm run prepare
+```
+
 ## Building
 
 To build run:
