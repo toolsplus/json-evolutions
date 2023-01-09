@@ -1,0 +1,73 @@
+{
+  "name": "@toolsplus/json-evolutions",
+  "version": "1.0.3",
+  "description": "JSON evolutions",
+  "main": "build/main/index.js",
+  "module": "build/module/index.js",
+  "typings": "build/main/index.d.ts",
+  "repository": "https://github.com/toolsplus/json-evolutions",
+  "author": "Tobias Binna <tobias.binna@toolsplus.io>",
+  "license": "MIT",
+  "files": [
+    "build/main",
+    "build/module",
+    "!**/*.spec.*",
+    "!**/__fixtures__/**",
+    "!**/__mocks__/**",
+    "!**/*.json",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "build": "run-p build:*",
+    "build:main": "tsc -p tsconfig.json",
+    "build:module": "tsc -p tsconfig.module.json",
+    "fix": "run-s fix:*",
+    "fix:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --write",
+    "fix:lint": "eslint src test --ext .ts --fix",
+    "lint": "eslint src test --ext .ts",
+    "prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "jest",
+    "watch:build": "tsc -p tsconfig.json -w",
+    "watch:test": "jest --silent --watch",
+    "doc": "run-s doc:html",
+    "doc:html": "typedoc src/ --exclude **/*.spec.ts --out build/docs",
+    "doc:json": "typedoc src/ --exclude **/*.spec.ts --json build/docs/typedoc.json",
+    "prepare-release": "run-s build doc:html",
+    "semantic-release": "semantic-release"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "17.3.0",
+    "@commitlint/config-angular": "17.3.0",
+    "@relmify/jest-fp-ts": "2.0.2",
+    "@semantic-release/commit-analyzer": "9.0.2",
+    "@semantic-release/npm": "9.0.1",
+    "@semantic-release/release-notes-generator": "10.0.3",
+    "@types/jest": "27.5.2",
+    "@typescript-eslint/eslint-plugin": "5.47.1",
+    "@typescript-eslint/parser": "5.47.1",
+    "eslint": "8.31.0",
+    "eslint-config-prettier": "8.5.0",
+    "fast-check": "3.5.0",
+    "husky": "^8.0.3",
+    "jest": "27.5.1",
+    "jest-junit": "15.0.0",
+    "npm-run-all": "4.1.5",
+    "prettier": "2.2.1",
+    "semantic-release": "19.0.5",
+    "ts-jest": "27.1.5",
+    "typedoc": "0.23.23",
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "fast-json-patch": "^3.0.0-1",
+    "fp-ts": "^2.9.3",
+    "immutability-helper": "^3.1.1",
+    "io-ts": "^2.2.13"
+  }
+}
