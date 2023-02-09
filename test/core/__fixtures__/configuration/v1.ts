@@ -4,7 +4,6 @@ import * as v0 from "./v0";
 import {
     latestVersion,
     versioned,
-    VersionedJsonObject,
     JsonPatchChangeset,
     Changelog,
     jsonPatchChangeset,
@@ -33,7 +32,7 @@ export const configuration = fc.record<Configuration>({
     isEnabled: fc.boolean(),
 });
 
-export const codec: t.Type<Configuration, VersionedJsonObject> = versioned(
+export const codec = versioned<Configuration>(
     t.strict({
         defaultFields: t.array(t.string),
         isEnabled: t.boolean,

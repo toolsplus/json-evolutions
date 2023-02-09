@@ -17,9 +17,6 @@
     "!**/*.json",
     "README.md"
   ],
-  "publishConfig": {
-    "access": "restricted"
-  },
   "engines": {
     "node": ">=14"
   },
@@ -66,9 +63,9 @@
     "typescript": "4.7.4"
   },
   "dependencies": {
-    "fast-json-patch": "^3.0.0-1",
-    "fp-ts": "^2.9.3",
+    "fast-json-patch": "^3.1.1",
+    "fp-ts": "^2.13.1",
     "immutability-helper": "^3.1.1",
-    "io-ts": "^2.2.13"
+    "io-ts": "^2.2.20"
   }
 }
