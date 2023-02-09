@@ -4,10 +4,11 @@ import {applyPatch, JsonPatchError} from "fast-json-patch";
 import * as E from "fp-ts/Either";
 import * as O from "fp-ts/Option";
 import * as A from "fp-ts/Array";
-import {ord, ordNumber} from "fp-ts/Ord";
+import * as J from "fp-ts/Json";
+import * as N from "fp-ts/number";
+import * as Ord from "fp-ts/Ord";
 import {flow, pipe} from "fp-ts/function";
-import {EvolutionError} from "../api/EvolutionError";
-import {Changelog, Changeset, Versioned} from "../api/Changeset";
+import {EvolutionError, Changelog, Changeset, Versioned} from "../api";
 
 /**
  * Base version is the first version of any versioned entity. If a changelog is empty the entity's version value
@@ -15,7 +16,7 @@ import {Changelog, Changeset, Versioned} from "../api/Changeset";
  */
 export const BASE_VERSION = 0;
 
-export type VersionedJsonObject = object & Versioned;
+export type VersionedJsonObject = J.JsonRecord & Versioned;
 
 const changesetReducer = <T>(
     target: E.Either<EvolutionError, T>,
@@ -68,7 +69,10 @@ const changesetReducer = <T>(
  * @returns Changelog sorted in ascending order.
  */
 const changelogSortedByVersion = (changelog: Changelog): Changelog => {
-    const byVersion = ord.contramap(ordNumber, (cs: Changeset) => cs._version);
+    const byVersion = Ord.Contravariant.contramap(
+        N.Ord,
+        (cs: Changeset) => cs._version,
+    );
     return A.sortBy([byVersion])(changelog);
 };
 
@@ -140,8 +144,8 @@ export const evolve = <T extends Versioned>(changelog: Changelog) => (
 export const versioned = <A extends object, O extends object = A, I = unknown>(
     codec: Type<A, O, I>,
     version: number,
-): Type<A, VersionedJsonObject, I> => {
-    return new Type<A, VersionedJsonObject, I>(
+): Type<A, O & Versioned, I> => {
+    return new Type<A, O & Versioned, I>(
         `Versioned<${codec.name}>`,
         codec.is,
         codec.validate,
