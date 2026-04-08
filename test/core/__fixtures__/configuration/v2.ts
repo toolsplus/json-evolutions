@@ -1,11 +1,13 @@
 import * as t from "io-ts";
 import * as fc from "fast-check";
+import * as E from "fp-ts/Either";
+import {pipe} from "fp-ts/function";
 import * as v1 from "./v1";
 import {
+    createChangelog,
     latestVersion,
     versioned,
     Changeset,
-    Changelog,
     jsonPatchChangeset,
 } from "../../../../src";
 
@@ -37,10 +39,12 @@ const migrateDefaultFieldsToFieldConfiguration: Changeset = jsonPatchChangeset({
     ],
 });
 
-export const changelog: Changelog = [
-    ...v1.changelog,
-    migrateDefaultFieldsToFieldConfiguration,
-];
+export const changelog = pipe(
+    createChangelog(...v1.changelog, migrateDefaultFieldsToFieldConfiguration),
+    E.getOrElseW((error) => {
+        throw new Error(error.message);
+    }),
+);
 
 export interface FieldConfiguration {
     defaultUserFields: string[];

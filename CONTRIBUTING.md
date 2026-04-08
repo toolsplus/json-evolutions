@@ -8,7 +8,7 @@ Before you can build and test, you must install and configure the following prod
 
 * [Git](https://git-scm.com/)
 
-* [Node.js](https://nodejs.org), (version specified in the engines field of [`package.json`](./package.json)) which is used to run tests, and generate distributable files.
+* [Node.js](https://nodejs.org) 24.x (or newer, as specified in the engines field of [`package.json`](./package.json)) which is used to run tests and generate distributable files.
 
 ## Getting the sources
 

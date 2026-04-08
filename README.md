@@ -25,21 +25,27 @@ $ npm add @toolsplus/json-evolutions
 
 ### Example
 
+Let's assume our app stores a configuration object and wants to evolve old values on read while always writing the latest version.
+
 #### Version 0
 
-Let's assume our app starts off with the following configuration record. Note, that the changelog is empty in the initial version (version 0) of the data.
+Let's start with the initial version of the stored data. At version `0`, the changelog is empty because there are no migrations to apply yet.
 
-We also define an [io-ts](https://github.com/gcanti/io-ts) `codec` that uses the `versioned` combinator included in this library. The `versioned` combinator injects the latest version value when data is encoded and drops the injected version value when data is decoded using the `io-ts` library. You neither are required to use `io-ts` nor the `versioned` combinator to use this library.
+We also define an [io-ts](https://github.com/gcanti/io-ts) codec using the `versioned` combinator. The `versioned` combinator injects the latest `_version` when encoding and expects your strict `io-ts` codec to strip `_version` again when decoding. Using `io-ts` is optional, but it is a convenient way to keep the version marker as a storage concern instead of leaking it into the rest of the app.
 
 ```typescript
+import * as E from "fp-ts/Either";
 import * as t from "io-ts";
 import {
+    createChangelog,
     latestVersion,
-    versioned,
     VersionedJsonObject,
+    versioned,
 } from "@toolsplus/json-evolutions";
 
-export const changelog = [];
+export const changelog = E.getOrElseW((error) => {
+    throw new Error(error.message);
+})(createChangelog());
 
 export interface Configuration {
     defaultFields: string[];
@@ -49,62 +55,69 @@ export const codec: t.Type<Configuration, VersionedJsonObject> = versioned(
     t.strict({
         defaultFields: t.array(t.string),
     }),
-    latestVersion(changelog), // 0 as long as the changelog is empty
+    latestVersion(changelog),
 );
 ```
 
-Configuration records can now be written using
+Configuration records can now be written using:
 
 ```typescript
-codec.encode({defaultFields: ["field1", "field2"]})
+codec.encode({defaultFields: ["field1", "field2"]});
 
 // {_version: 0, defaultFields: ["field1", "field2"]}
 ```
 
-Because our codec used the io-ts `versioned` combinator the latest version tag is included automatically into the written JSON record.
+Because the codec uses `versioned`, the latest `_version` is injected automatically when encoding.
 
-To read a previously stored configuration value we first use `evolve`. This will find the `_version` tag in the JSON record and decided which changesets need to be applied to the given data. In this case, there are no changesets so `evolve` will not do anything. Next, the data is passed to our io-ts `decode` function which will validate the given data and drop the `_version` tag (this is storage concern - code anywhere further upstream in our app should not know about it). Again, the decode step and using io-ts is optional.
+To read a stored configuration value, first pass it through `evolve`. With an empty changelog there is nothing to migrate, so the value is returned unchanged. After that, decode it with the `io-ts` codec to validate the structure and drop `_version`.
 
 ```typescript
+import * as E from "fp-ts/Either";
 import {pipe} from "fp-ts/function";
 import {evolve} from "@toolsplus/json-evolutions";
 
 pipe(
     {_version: 0, defaultFields: ["field1", "field2"]},
     evolve(changelog),
-    E.map(codec.decode),
+    E.chain(codec.decode),
 );
 
-// {defaultFields: ["field1", "field2"]}
+// Right({defaultFields: ["field1", "field2"]})
 ```
 
-The example above is simplified for readability. The error types of `evolve` and `codec.decode` would probably have to adjusted to be compatible.
+The important detail here is that `evolve` returns an `Either`, and `codec.decode` also returns an `Either`, so `E.chain(codec.decode)` keeps the two validation steps in the same error pipeline.
 
 #### Version 1
 
-When the configuration evolves we define one or more changesets that describe how to migrate configuration values with version 0 to version 1 (the now latest version). This library supports changesets written as[ JSON Patch instructions](http://jsonpatch.com/) or as an [immutability-helper](https://github.com/kolodny/immutability-helper) spec.
+Now let's evolve the schema by adding a new `isEnabled` field. To do that, define a validated changelog containing a version `1` changeset. Changelog versions must be sequential and start at `1`, and `createChangelog` checks that rule up front.
 
 ```typescript
+import * as E from "fp-ts/Either";
 import * as t from "io-ts";
 import {
-    latestVersion,
-    versioned,
+    createChangelog,
     jsonPatchChangeset,
-    VersionedJsonObject
+    latestVersion,
+    VersionedJsonObject,
+    versioned,
 } from "@toolsplus/json-evolutions";
 
-const addIsEnabledField: JsonPatchChangeset = jsonPatchChangeset({
-    _version: 1,
-    patch: [
-        {
-            op: "add",
-            path: "/isEnabled",
-            value: true,
-        },
-    ],
-});
-
-export const changelog: Changelog = [addIsEnabledField];
+export const changelog = E.getOrElseW((error) => {
+    throw new Error(error.message);
+})(
+    createChangelog(
+        jsonPatchChangeset({
+            _version: 1,
+            patch: [
+                {
+                    op: "add",
+                    path: "/isEnabled",
+                    value: true,
+                },
+            ],
+        }),
+    ),
+);
 
 export interface Configuration {
     defaultFields: string[];
@@ -120,38 +133,74 @@ export const codec: t.Type<Configuration, VersionedJsonObject> = versioned(
 );
 ```
 
-Reading and writing values works just as before. However, this time when writing a value version 1 will be injected:
+Writing values still happens through `versioned`, which now injects version `1`:
 
 ```typescript
-codec.encode({defaultFields: ["field1", "field2"], isEnabled: false})
+codec.encode({defaultFields: ["field1", "field2"], isEnabled: false});
 
 // {_version: 1, defaultFields: ["field1", "field2"], isEnabled: false}
 ```
 
-To read a previously stored version 0 configuration value we again call `evolve`. It will find the `_version` tag in the JSON record and find that there is one changeset to be applied to migrate the given data to the latest version. The `isEnabled` property with the default value `true` will be added as described in the version 1 changelog. The `decode` step will work just as before.
+Reading a previously stored version `0` value now goes through a strict migration boundary. `evolve` will validate the stored value, determine that version `1` is still pending, apply the configured changeset, and return the migrated shape. The codec decode step then validates the business shape and strips `_version`.
 
 ```typescript
+import * as E from "fp-ts/Either";
 import {pipe} from "fp-ts/function";
 import {evolve} from "@toolsplus/json-evolutions";
 
 pipe(
     {_version: 0, defaultFields: ["field1", "field2"]},
     evolve(changelog),
-    E.map(codec.decode),
+    E.chain(codec.decode),
 );
 
 // Right({defaultFields: ["field1", "field2"], isEnabled: true})
 ```
 
-The example above is simplified for readability. The error types of `evolve` and `codec.decode` would probably have to adjusted to be compatible.
+### Initializing older unversioned values
+
+If your storage contains historic values from before `_version` existed, you can opt in to `initializeFromUnversioned`. The hook is only called when `_version` is missing and must return a valid version `0` stored value.
+
+```typescript
+import * as E from "fp-ts/Either";
+import {evolve, InitializeFromUnversioned} from "@toolsplus/json-evolutions";
+
+const initializeFromUnversioned: InitializeFromUnversioned = (input) => {
+    if (
+        typeof input !== "object" ||
+        input === null ||
+        Array.isArray(input) ||
+        !("defaultFields" in input)
+    ) {
+        return E.left({
+            errorCode: "INVALID_STORED_VALUE_ERROR",
+            message: "Cannot initialize value.",
+        });
+    }
+
+    return E.right({
+        ...(input as Record<string, unknown>),
+        _version: 0,
+    });
+};
+
+evolve(changelog, {initializeFromUnversioned})({
+    defaultFields: ["field1", "field2"],
+});
+```
+
+In other words, `initializeFromUnversioned` is a one-time bridge from pre-versioned data into the normal versioned migration flow. Once the hook has returned a valid version `0` value, the regular changelog semantics apply.
 
 ### Rules
 
-To make sure the concepts implemented in this library work as intended follow these rules when you code your evolutions:
+To make sure the concepts implemented in this library work as intended, follow these rules when you code your evolutions:
 
 * Existing changesets **must** never be changed after they have been shipped to production.
 * New changesets **must** always have a sequentially increasing version number.
+* Call `createChangelog` or `validateChangelog` once at startup and reuse the validated result.
 
-### Limitations
+### Assumptions
 
-It is assumed that the JSON data is always a JSON object. Any JSON values other than JSON objects are not supported.
+* Stored values must be JSON objects.
+* `initializeFromUnversioned` is disabled by default and should only be used for known pre-versioning records.
+* The library validates stored values and changelogs eagerly and returns an error instead of silently accepting unsupported shapes.
