@@ -1,8 +1,15 @@
 import * as t from "io-ts";
 import * as fc from "fast-check";
-import {latestVersion, versioned} from "../../../../src";
+import * as E from "fp-ts/Either";
+import {pipe} from "fp-ts/function";
+import {createChangelog, latestVersion, versioned} from "../../../../src";
 
-export const changelog = [];
+export const changelog = pipe(
+    createChangelog(),
+    E.getOrElseW((error) => {
+        throw new Error(error.message);
+    }),
+);
 
 export interface Configuration {
     defaultFields: string[];

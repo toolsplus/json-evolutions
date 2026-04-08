@@ -1,5 +1,5 @@
 // This TS config is solely to tell ESLint to lint files that are not part of the default TS build config and
-// referenced in `.eslintrc.json` configuration.
+// referenced in `eslint.config.mjs`.
 //
 // Using ESLint `parserOptions.project` the TypeScript ESLint parser will only lint files included by the specified
 // tsconfig.json. Because test spec files and test resource folders such as __FIXTURES__ and __MOCKS__ are excluded

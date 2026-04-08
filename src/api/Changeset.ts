@@ -1,5 +1,7 @@
 import {Operation} from "fast-json-patch";
 import {Spec} from "immutability-helper";
+import {Either} from "fp-ts/Either";
+import {EvolutionError} from "./EvolutionError";
 
 /**
  * Versioned interface requires a `_version` attribute on any implementing subtype.
@@ -10,6 +12,18 @@ import {Spec} from "immutability-helper";
 export interface Versioned {
     readonly _version: number;
 }
+
+export type StoredValue = Record<string, unknown> & Versioned;
+
+export type StoredValueV0 = Record<string, unknown> & {
+    readonly _version: 0;
+};
+
+export type InitializeFromUnversioned = (
+    input: unknown,
+) => Either<EvolutionError, StoredValueV0>;
+
+declare const validChangelogBrand: unique symbol;
 
 interface JsonPatchChangesetProps extends Versioned {
     readonly patch: Operation[];
@@ -37,6 +51,7 @@ export const jsonPatchChangeset = (
 });
 
 interface ImmutabilityHelperChangesetProps extends Versioned {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly spec: Spec<any>;
 }
 
@@ -64,4 +79,8 @@ export const immutabilityHelperChangeset = (
 
 export type Changeset = JsonPatchChangeset | ImmutabilityHelperChangeset;
 
-export type Changelog = Changeset[];
+export type Changelog = ReadonlyArray<Changeset>;
+
+export type ValidChangelog = Changelog & {
+    readonly [validChangelogBrand]: true;
+};
