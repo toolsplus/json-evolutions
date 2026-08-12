@@ -7,9 +7,5 @@
 //
 // https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/parser#parseroptionsproject
 {
-  "extends": "./tsconfig.json",
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts",
-  ]
+  "extends": "./tsconfig.test.json"
 }
