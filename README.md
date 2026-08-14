@@ -2,15 +2,15 @@
 
 `@toolsplus/json-evolutions` evolves stored JSON objects through explicitly versioned changesets while application code works with the latest Effect Schema representation.
 
-Version 2 is Effect 4-native and ESM-only. It deliberately replaces the v1 io-ts/fp-ts interface while preserving the stored `_version` protocol.
+Version 3 is Effect 4-native and ESM-only. It deliberately replaces the v1 io-ts/fp-ts interface while preserving the stored `_version` protocol.
 
 ## Install
 
 ```shell
-npm install @toolsplus/json-evolutions effect@4.0.0-beta.107
+npm install @toolsplus/json-evolutions effect@^4.0.0-rc.109
 ```
 
-The Effect peer is pinned exactly while Effect 4 Schema remains beta-sensitive. Node.js 24 or newer is required.
+The Effect peer accepts RC 109 or newer compatible Effect 4 releases. Development and package smoke tests remain pinned to RC 109 as the supported baseline. Node.js 24 or newer is required.
 
 ## Complete example
 
@@ -111,4 +111,4 @@ A stored value must be a genuine JSON root object with an own non-negative safe-
 
 Functions, `undefined`, symbols, bigint, `Date`, `Map`, `Set`, non-finite numbers, cycles, and root arrays are rejected. Changesets never mutate the original input. The engine owns `_version`, stamps it after each successful changeset, and validates the newly stamped value before continuing. Business structs may not declare the reserved root marker.
 
-See [the v1-to-v2 migration guide](docs/migration-v2.md) for source migration details.
+See [the v1-to-v3 migration guide](docs/migration-v3.md) for source migration details.

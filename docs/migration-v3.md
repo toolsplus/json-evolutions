@@ -1,17 +1,17 @@
-# Migrating from v1 to v2
+# Migrating from v1 to v3
 
-Version 2 preserves stored values but intentionally replaces the source API. Existing JSON objects carrying sequential `_version` markers remain the compatibility boundary.
+Version 3 preserves stored values but intentionally replaces the source API. Existing JSON objects carrying sequential `_version` markers remain the compatibility boundary.
 
 ## Package requirements
 
 - Use Node.js 24 or newer.
 - Consume the package as ESM.
-- Install the exact peer `effect@4.0.0-beta.107`.
+- Install a compatible Effect 4 peer with `effect@^4.0.0-rc.109`.
 - Remove direct `io-ts` and `fp-ts` usage that existed only for JSON Evolutions.
 
 ## API replacements
 
-| v1                                           | v2                                             |
+| v1                                           | v3                                             |
 | -------------------------------------------- | ---------------------------------------------- |
 | io-ts codec                                  | `Schema.Struct`                                |
 | `versioned(codec, latestVersion(changelog))` | `schema.pipe(versioned(changelog))`            |
@@ -23,6 +23,8 @@ Version 2 preserves stored values but intentionally replaces the source API. Exi
 | `parseStoredValue`                           | removed; use the exported `StoredValue` schema |
 
 ## Before
+
+This schematic legacy snippet shows the old call shape. `input` and `throwError` stand for application-specific values and are intentionally omitted.
 
 ```typescript legacy
 import * as E from "fp-ts/Either";
@@ -45,7 +47,7 @@ const decoded = pipe(evolve(changelog)(input), E.chain(Configuration.decode));
 
 ## After
 
-The v2 example below is compiled against the packed npm artifact during the package smoke test.
+The v3 example below is compiled against the packed npm artifact during the package smoke test.
 
 ```typescript package-smoke
 import {Effect, Result, Schema} from "effect";
@@ -64,14 +66,14 @@ const input = {_version: 1, enabled: true};
 const decoded = await Effect.runPromise(
     evolveAndDecode(StoredConfiguration)(input),
 );
-if (!decoded.enabled) throw new Error("v2 migration example failed");
+if (!decoded.enabled) throw new Error("v3 migration example failed");
 ```
 
 ## Behavior changes
 
 ### Strict recursive JSON
 
-Version 2 validates the entire stored value. JavaScript-only values such as functions, `undefined`, bigint, `Date`, `Map`, `Set`, non-finite numbers, and cycles now fail as `InvalidStoredValue`.
+Version 3 validates the entire stored value. JavaScript-only values such as functions, `undefined`, bigint, `Date`, `Map`, `Set`, non-finite numbers, and cycles now fail as `InvalidStoredValue`.
 
 ### Exact latest-version decoding
 
@@ -99,4 +101,4 @@ Replace `errorCode` branching with `_tag` matching. Errors are yieldable `Schema
 
 ### ESM-only consumption
 
-Version 2 exposes one ESM root entry. Replace `require()` with `import`; no CommonJS condition is advertised.
+Version 3 exposes one ESM root entry. Replace `require()` with `import`; no CommonJS condition is advertised.

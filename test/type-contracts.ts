@@ -74,19 +74,19 @@ export type CombinedServicesContract = Expect<
 
 // @ts-expect-error Business schemas cannot own the reserved root marker.
 versioned(changelog)(Schema.Struct({_version: Schema.Number}));
-// @ts-expect-error Arbitrary object codecs are outside the v2 interface.
+// @ts-expect-error Arbitrary object codecs are outside the v3 interface.
 versioned(changelog)(Schema.Record(Schema.String, Schema.String));
 
 class BusinessClass extends Schema.Class<BusinessClass>("BusinessClass")({
     value: Schema.String,
 }) {}
-// @ts-expect-error Schema classes are outside the v2 interface.
+// @ts-expect-error Schema classes are outside the v3 interface.
 versioned(changelog)(BusinessClass);
 
 const StructWithRest = Schema.StructWithRest(Schema.Struct({}), [
     Schema.Record(Schema.String, Schema.String),
 ]);
-// @ts-expect-error Structs with rest records are outside the v2 interface.
+// @ts-expect-error Structs with rest records are outside the v3 interface.
 versioned(changelog)(StructWithRest);
 
 // @ts-expect-error evolveAndDecode accepts only nominal VersionedSchema values.

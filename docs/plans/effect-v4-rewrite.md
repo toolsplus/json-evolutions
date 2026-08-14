@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release `@toolsplus/json-evolutions` 2.0.0 as an Effect 4-native, ESM-only library. The release replaces the io-ts and fp-ts interface, preserves the persisted stored-value protocol, validates genuine JSON at runtime, and continues delegating changeset execution to `fast-json-patch` and `immutability-helper`.
+Release `@toolsplus/json-evolutions` 3.0.0 as an Effect 4-native, ESM-only library. The release replaces the io-ts and fp-ts interface, preserves the persisted stored-value protocol, validates genuine JSON at runtime, and continues delegating changeset execution to `fast-json-patch` and `immutability-helper`.
 
 The rewrite is intentionally source-incompatible with v1. Existing stored values remain compatible.
 
@@ -153,7 +153,7 @@ evolveAndDecode<E = never, R = never>(
 
 The final implementation must preserve the supplied struct's decoding and encoding service requirements. `VersionedSchema` is nominally marked and retains its validated changelog through private symbol metadata.
 
-`versioned` initially supports `Schema.Struct` only. It rejects a business schema that declares the reserved root `_version` field. Do not add an opaque arbitrary-object-codec overload in v2.0.
+`versioned` initially supports `Schema.Struct` only. It rejects a business schema that declares the reserved root `_version` field. Do not add an opaque arbitrary-object-codec overload in v3.0.
 
 All transformation functions are data-last and pipe-friendly. Do not add duplicate data-first overloads.
 
@@ -318,8 +318,8 @@ Use exact Effect beta ranges. Do not use `^` or `~` while the public Schema type
 
 - Update CI and release workflow test commands for Vitest.
 - Preserve build, coverage, lint, formatting, documentation, semantic-release, npm provenance, and Node 24 checks.
-- Ensure the release commit communicates a breaking change under the repository's Angular conventional-commit rules so semantic-release selects `2.0.0`.
-- Publish directly as stable `2.0.0`; do not create a package prerelease line.
+- Ensure the release commit communicates a breaking change under the repository's Angular conventional-commit rules so semantic-release selects `3.0.0`.
+- Publish directly as stable `3.0.0`; do not create a package prerelease line.
 
 ## Test strategy
 
@@ -417,7 +417,7 @@ State explicitly that changelogs are trusted source declarations and that stored
 
 ### Migration guide
 
-Add a concise v1-to-v2 guide covering:
+Add a concise v1-to-v3 guide covering:
 
 - `io-ts` codec to Effect `Schema.Struct`
 - `versioned(codec, latestVersion(changelog))` to `schema.pipe(versioned(changelog))`
@@ -495,11 +495,11 @@ Do this after the interface works end to end so packaging failures remain separa
 ### Phase 7: Consumer migration and release readiness
 
 1. Rewrite the README.
-2. Add the v1-to-v2 migration guide.
+2. Add the v1-to-v3 migration guide.
 3. Verify generated API documentation.
 4. Audit exports and tarball contents.
 5. Run the full quality gate.
-6. Prepare a breaking conventional commit/release path for stable 2.0.0.
+6. Prepare a breaking conventional commit/release path for stable 3.0.0.
 
 ## Quality gate
 

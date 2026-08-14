@@ -21,7 +21,7 @@
     "!**/__mocks__/**",
     "!**/*.json",
     "README.md",
-    "docs/migration-v2.md"
+    "docs/migration-v3.md"
   ],
   "engines": {
     "node": ">=24"
@@ -31,10 +31,10 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "fix": "run-s fix:*",
-    "fix:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.mjs\" \"vitest.config.ts\" \"README.md\" \"docs/migration-v2.md\" --write",
+    "fix:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.mjs\" \"vitest.config.ts\" \"README.md\" \"docs/migration-v3.md\" --write",
     "fix:lint": "eslint src test --fix",
     "lint": "eslint src test",
-    "prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.mjs\" \"vitest.config.ts\" \"README.md\" \"docs/migration-v2.md\" --check",
+    "prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.mjs\" \"vitest.config.ts\" \"README.md\" \"docs/migration-v3.md\" --check",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "smoke:package": "node scripts/package-smoke.mjs",
@@ -58,7 +58,7 @@
     "@typescript-eslint/eslint-plugin": "8.43.0",
     "@typescript-eslint/parser": "8.43.0",
     "@vitest/coverage-v8": "4.1.10",
-    "effect": "4.0.0-beta.107",
+    "effect": "4.0.0-rc.109",
     "eslint": "9.35.0",
     "eslint-config-prettier": "10.1.8",
     "fast-check": "4.9.0",
@@ -72,7 +72,7 @@
     "vitest": "4.1.10"
   },
   "peerDependencies": {
-    "effect": "4.0.0-beta.107"
+    "effect": "^4.0.0-rc.109"
   },
   "dependencies": {
     "fast-json-patch": "^3.1.1",
