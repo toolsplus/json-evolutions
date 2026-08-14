@@ -40,7 +40,7 @@ try {
     const packedPaths = new Set(files.map(({path}) => path));
     for (const requiredPath of [
         "README.md",
-        "docs/migration-v2.md",
+        "docs/migration-v3.md",
         "build/index.js",
         "build/index.d.ts",
         "package.json",
@@ -75,16 +75,16 @@ try {
             "--ignore-scripts",
             "--no-package-lock",
             tarball,
-            "effect@4.0.0-beta.107",
+            "effect@4.0.0-rc.109",
         ],
         {cwd: fixture, stdio: "inherit", env: npmEnvironment},
     );
 
     const readmeExample = extractPackageSmokeExample("README.md");
-    const migrationExample = extractPackageSmokeExample("docs/migration-v2.md");
+    const migrationExample = extractPackageSmokeExample("docs/migration-v3.md");
     writeFileSync(resolve(fixture, "README.example.ts"), readmeExample);
     writeFileSync(
-        resolve(fixture, "migration-v2.example.ts"),
+        resolve(fixture, "migration-v3.example.ts"),
         migrationExample,
     );
     writeFileSync(
@@ -98,7 +98,7 @@ try {
                 noEmit: true,
                 skipLibCheck: true,
             },
-            include: ["README.example.ts", "migration-v2.example.ts"],
+            include: ["README.example.ts", "migration-v3.example.ts"],
         }),
     );
 
@@ -117,7 +117,7 @@ try {
     });
     execFileSync(
         process.execPath,
-        [resolve(fixture, "migration-v2.example.ts")],
+        [resolve(fixture, "migration-v3.example.ts")],
         {cwd: fixture, stdio: "inherit"},
     );
 
